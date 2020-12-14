@@ -13,6 +13,7 @@ library(readr)
 library(readxl)
 library(dplyr)
 library(tidyr)
+library(assertr)
 
 #Testing where the top level of the project directory is
 here::here()
@@ -20,4 +21,14 @@ here::here()
 #Setting the path to the data file
 seabirds <- read_csv(here("clean_data/seabirds_data.csv"))
 ```
+
+
+
+5. How many penguins were seen? 
+```{r}
+penguin_sightings <- seabirds %>% 
+  filter(str_detect(bird_common_name, "[Pp]enguin"))
+```
+
+
 

@@ -5,6 +5,7 @@ library(readr)
 library(readxl)
 library(dplyr)
 library(tidyr)
+library(assertr)
 
 #Testing where the top level of the project directory is
 here::here()
@@ -66,6 +67,10 @@ seabirds_data <-  seabirds_data %>%
 #Replacing missing values with zeros for latitude and longitude columns
   mutate(lat = coalesce(lat, 0),
          long = coalesce(long, 0))
+
+#Putting in checks using assertive programming to ensure latitude and longitude are valid values. (Latitude between -90 and 90, longitude between -180 and 180).
+verify(lat >= -90 & lat <= 90) %>% 
+  verify(long >= -180 & long <= 180)
 
 #Writing the cleaned data to a csv file.
 write_csv(seabirds_data, "clean_data/seabirds_data.csv")
