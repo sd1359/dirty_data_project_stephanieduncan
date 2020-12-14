@@ -9,13 +9,10 @@ library(tidyr)
 #Testing where the top level of the project directory is
 here::here()
 
-#Reading in the raw seabird data
-raw_seabirds_data <- read_xls(here("raw_data/seabirds.xls"))
-
 #List the sheet names contained in the .xls file
 excel_sheets("raw_data/seabirds.xls")
 
-#Extracting the "Bird data by record ID" sheet from .xls file and cleaning the names
+#Reading in the raw seabird data, extracting the "Bird data by record ID" sheet and cleaning the names
 bird_data <- read_excel("raw_data/seabirds.xls", sheet = "Bird data by record ID") %>% clean_names()
 
 #Getting the variable names and types for bird_data
@@ -41,7 +38,7 @@ names(seabirds_data)
 
 seabirds_data <- seabirds_data %>% 
 #Keeping the following columns: bird's common name, scientific name, species abbreviation, latitude, longitude, record id.
-select(record_id, bird_common_name, bird_scientific_name, species_abbreviation, lat, long) 
+select(record_id, bird_common_name, bird_scientific_name, species_abbreviation, lat, long, count) 
 
 #Finding any missing values - 1st Stage
 seabirds_data %>% 
@@ -62,7 +59,7 @@ seabirds_data %>%
 missing_values <- seabirds_data %>% 
   filter(is.na(bird_scientific_name))
 
-# Replace NA's is bird_scientific_name column with "Unknown"
+# Replace NA's in bird_scientific_name column with "Unknown"
          
 seabirds_data <-  seabirds_data %>% 
   mutate(bird_scientific_name = replace_na(bird_scientific_name, "Unknown")) %>% 
@@ -70,3 +67,5 @@ seabirds_data <-  seabirds_data %>%
   mutate(lat = coalesce(lat, 0),
          long = coalesce(long, 0))
 
+#Writing the cleaned data to a csv file.
+write_csv(seabirds_data, "clean_data/seabirds_data.csv")
