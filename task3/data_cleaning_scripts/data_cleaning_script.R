@@ -4,6 +4,7 @@ library(here)
 library(readr)
 library(readxl)
 library(dplyr)
+library(tidyr)
 
 #Testing where the top level of the project directory is
 here::here()
@@ -36,9 +37,36 @@ seabirds_data <- full_join(ship_data, bird_data, by = "record_id") %>%
   rename(bird_common_name = species_common_name_taxon_age_sex_plumage_phase,
          bird_scientific_name = species_scientific_name_taxon_age_sex_plumage_phase)
 
-#Keeping the following columns: bird's common name, scientific name, species abbreviation, latitude, longitude, record id, 
+names(seabirds_data)
 
+seabirds_data <- seabirds_data %>% 
+#Keeping the following columns: bird's common name, scientific name, species abbreviation, latitude, longitude, record id.
+select(record_id, bird_common_name, bird_scientific_name, species_abbreviation, lat, long) 
 
+#Finding any missing values - 1st Stage
+seabirds_data %>% 
+  summarise(across(.fns = ~ sum(is.na(.x))))
 
+#Checking for missing values specifically in bird_scientific_name
+missing_values <- seabirds_data %>% 
+  filter(is.na(bird_scientific_name))
 
+#Delete records where bird_common_name states "[NO BIRDS RECORDED]
+seabirds_data <- 
+filter(seabirds_data, bird_common_name != "[NO BIRDS RECORDED]")
+
+#Finding any missing values - 2nd Stage
+seabirds_data %>% 
+  summarise(across(.fns = ~ sum(is.na(.x))))
+
+missing_values <- seabirds_data %>% 
+  filter(is.na(bird_scientific_name))
+
+# Replace NA's is bird_scientific_name column with "Unknown"
+         
+seabirds_data <-  seabirds_data %>% 
+  mutate(bird_scientific_name = replace_na(bird_scientific_name, "Unknown")) %>% 
+#Replacing missing values with zeros for latitude and longitude columns
+  mutate(lat = coalesce(lat, 0),
+         long = coalesce(long, 0))
 
