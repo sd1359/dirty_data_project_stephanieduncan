@@ -61,16 +61,25 @@ missing_values <- seabirds_data %>%
   filter(is.na(bird_scientific_name))
 
 # Replace NA's in bird_scientific_name column with "Unknown"
-         
 seabirds_data <-  seabirds_data %>% 
   mutate(bird_scientific_name = replace_na(bird_scientific_name, "Unknown")) %>% 
 #Replacing missing values with zeros for latitude and longitude columns
   mutate(lat = coalesce(lat, 0),
-         long = coalesce(long, 0))
-
+         long = coalesce(long, 0)) %>% 
 #Putting in checks using assertive programming to ensure latitude and longitude are valid values. (Latitude between -90 and 90, longitude between -180 and 180).
 verify(lat >= -90 & lat <= 90) %>% 
   verify(long >= -180 & long <= 180)
+
+#Finding any missing values - 3rd Stage
+seabirds_data %>% 
+  summarise(across(.fns = ~ sum(is.na(.x))))
+#The above check showed there are missing values in count column. 
+#Taking a closer look.
+missing_values <- seabirds_data %>% 
+  filter(is.na(count))
+#There are 2008 rows of missing count values - drop these.
+seabirds_data <- seabirds %>% 
+  drop_na()
 
 #Writing the cleaned data to a csv file.
 write_csv(seabirds_data, "clean_data/seabirds_data.csv")
