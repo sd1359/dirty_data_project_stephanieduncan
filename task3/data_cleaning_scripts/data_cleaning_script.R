@@ -31,8 +31,7 @@ dim(ship_data)
 seabirds_data <- full_join(ship_data, bird_data, by = "record_id") %>% 
   #Renaming column names
   rename(bird_common_name = species_common_name_taxon_age_sex_plumage_phase,
-         bird_scientific_name = species_scientific_name_taxon_age_sex_plumage_phase,
-         number_of_birds = count)
+         bird_scientific_name = species_scientific_name_taxon_age_sex_plumage_phase)
 
 #An overall view shows that the data is about sightings of bird species by ships between 1969 and 1990.
 
@@ -40,7 +39,7 @@ names(seabirds_data)
 
 seabirds_data <- seabirds_data %>% 
 #Keeping the following columns: bird's common name, scientific name, species abbreviation, latitude, record id.
-select(record_id, bird_common_name, bird_scientific_name, species_abbreviation, lat, long, number_of_birds, date) 
+select(record_id, bird_common_name, bird_scientific_name, species_abbreviation, lat, long, count, date) 
 
 #Finding any missing values - 1st Stage
 seabirds_data %>% 
@@ -77,7 +76,7 @@ seabirds_data %>%
 #The above check showed there are missing values in count column. 
 #Taking a closer look.
 missing_values <- seabirds_data %>% 
-  filter(is.na(number_of_birds))
+  filter(is.na(count))
 #There are many rows of missing count values - drop these.
 seabirds_data <- seabirds_data %>% 
   drop_na()
