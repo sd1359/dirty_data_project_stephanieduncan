@@ -33,6 +33,13 @@ most_individual_sightings <- seabirds %>%
 
 2. Which bird had the highest total count?
 
+```{r}
+bird_highest_total_count <- seabirds %>% 
+  select(-lat, -long, -record_id, -date) %>% 
+  slice_max(number_of_birds)
+#Species PUFTEN has the highest total count
+```
+
 
 3. Which bird had the highest total count above a latitude of -30?
 
@@ -66,6 +73,8 @@ penguins_seen <- seabirds %>%
   summarise(number_of_penguins = sum(number_of_birds)) 
 #%>% arrange(desc(number_of_penguins))
 ```
+
+Additional Analysis
 
 
 
