@@ -79,7 +79,7 @@ penguins_seen <- seabirds %>%
 ```
 
 Additional Analysis
-Show the number of bird sightings by dates.
+6. Show the number of bird sightings by dates.
 ```{r}
 birds_sightings_dates <- 
 seabirds %>%
@@ -88,7 +88,6 @@ seabirds %>%
   summarise(number_of_bird_sightings = sum(count))
 #There are quite a few gaps where sightings are not displayed for a few days or months, possibly due to bird sightings not being recorded or bird migration.
 ```
-
 
 
 
