@@ -1,0 +1,165 @@
+---
+title: "Halloween Candy"
+author: "Stephanie Duncan"
+date: "16/12/2020"
+output: html_document
+---
+
+```{r}
+#Loading the relevent libraries
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(janitor)
+library(tidyr)
+library(stringr)
+library(assertr)
+library(here)
+library(readr)
+```
+
+```{r}
+#Testing where the top level of the project directory is
+here::here()
+
+#Setting the path to the data file
+halloween_candy <- read_csv(here("clean_data/halloween_candy.csv"),
+#Parsing failures error solution for gender and country columns
+col_types = cols(gender = col_character(), country = col_character()))
+```
+
+1. What is the total number of candy ratings given across the three years. (number of candy ratings, not number of raters. Don’t count missing values)
+
+```{r}
+total_ratings <-
+halloween_candy %>% 
+  filter(!is.na(rating)) %>% 
+  summarise(total_ratings = n())
+
+#There are 548814 total ratings.
+
+```
+
+2. What was the average age of people who are going out trick or treating and the average age of people not going trick or treating?
+
+```{r}
+average_age_trick_or_treating <- halloween_candy %>% 
+  group_by(trick_or_treating) %>%
+ drop_na() %>% 
+  summarise(avg_age = round(mean(age, na.rm = TRUE)))
+#The average age of people who are trick or treating is 39 compared to an average age of 42 for those not trick or treating.
+```
+| trick_or_treating | average_age |
+|-------------------|-------------|
+| No                | 42          |
+| Yes               | 39          |
+
+
+3. For each of joy, despair and meh, which candy bar received the most of these ratings?
+```{r}
+#Find the ratings total for each bar for each rating
+most_rated_candy <- halloween_candy %>% 
+   select(candy, rating) %>% 
+  filter(rating == c("joy", "despair", "meh")) %>% 
+  group_by(candy, rating) %>% 
+  count() 
+
+#Show the ratings 
+most_rated_candy <- most_rated_candy %>% 
+  group_by(rating) %>% 
+  slice_max(n) %>% 
+  arrange(desc(n))
+```
+| candy                      | rating  | ratings_count |
+|----------------------------|---------|---------------|
+| reese_s_peanut_butter_cups | joy     | 3307          |
+| gum_from_baseball_cards    | despair | 3265          |
+| chiclets                   | meh     | 879           |
+
+4. How many people rated Starburst as despair?
+
+```{r}
+starbust_despair_rating <- halloween_candy %>% 
+  filter(candy == "starburst",
+         rating == "despair") %>% 
+  summarise(total = n())
+#1865 people
+```
+
+For the next three questions, count despair as -1, joy as +1 and meh as 0.
+
+```{r}
+halloween_candy <- halloween_candy %>% 
+  filter(rating == c("despair", "joy", "meh")) %>% 
+  mutate(rating = case_when(
+    rating == "despair" ~ -1, 
+    rating == "joy" ~ +1, 
+    rating == "meh" ~ 0
+  ))
+```
+
+
+5. What was the most popular candy bar by this rating system for each gender in the dataset?
+
+```{r}
+popular_candy_by_gender <- halloween_candy %>% 
+  select(gender, candy, rating) %>% 
+  drop_na() %>% 
+  group_by(gender, candy) %>% 
+  summarise(total = sum(rating)) %>% 
+  slice_max(total) %>% 
+  arrange(desc(total))
+```
+
+| gender             | candy | total |
+|--------------------|-------|-------|
+| male               | twix  | 992   |
+| female             | twix  | 574   |
+| I'd rather not say | twix  | 41    |
+| other              | twix  | 24    |
+
+6. What was the most popular candy bar in each year?
+
+```{r}
+most_popular_candy_by_year <-
+halloween_candy %>% 
+  select(year, rating, candy) %>% 
+  drop_na() %>% 
+  group_by(year, candy) %>% 
+  summarise(total = sum(rating)) %>% 
+  slice_max(total)
+```
+
+| year | candy                    | total |
+|------|--------------------------|-------|
+| 2015 | any_full_sized_candy_bar | 1458  |
+| 2016 | any_full_sized_candy_bar | 322   |
+| 2017 | twix                     | 1376  |
+
+
+7. What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
+
+```{r}
+most_popular_candy_by_countries <-
+halloween_candy %>% 
+  drop_na(country) %>% 
+  select(country, rating, candy) %>% 
+    mutate(country = case_when(
+      country == "usa" ~ "usa",
+      country == "canada" ~ "canada",
+      country == "uk" ~ "uk",
+      TRUE ~ "other"
+    )) %>% 
+  group_by(country, candy) %>% 
+  summarise(total = sum(rating)) %>% 
+  slice_max(total) %>% 
+  arrange(desc(total))
+```
+
+| country | candy        | total |
+|---------|--------------|-------|
+| usa     | twix         | 1437  |
+| canada  | mars         | 150   |
+| other   | butterfinger | 31    |
+| other   | twix         | 31    |
+| uk      | twix         | 24    |
